@@ -602,6 +602,150 @@ footer p{
   to{opacity:1;transform:translateY(0)}
 }
 
+/* ── ABOUT SECTION ── */
+.about-section{
+  margin:2rem 0;
+  animation:fadeUp 0.8s 0.35s ease both;
+}
+.about-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0.75rem;
+  margin:1.5rem 0 2rem;
+}
+.about-block{
+  background:var(--ash);
+  border:1px solid var(--gold-line);
+  padding:1.5rem 1.2rem;
+  transition:border-color 0.2s;
+}
+.about-block:hover{border-color:rgba(201,168,76,0.35)}
+.about-icon{
+  font-family:'Noto Serif SC',serif;
+  font-size:2rem;
+  color:var(--gold);
+  opacity:0.4;
+  margin-bottom:0.8rem;
+  line-height:1;
+}
+.about-title{
+  font-family:'Space Mono',monospace;
+  font-size:0.62rem;
+  letter-spacing:0.15em;
+  color:rgba(244,237,224,0.7);
+  margin-bottom:0.6rem;
+}
+.about-text{
+  font-size:0.88rem;
+  line-height:1.85;
+  color:rgba(244,237,224,0.45);
+  font-weight:300;
+}
+
+/* ── STEPS ── */
+.steps{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:0.75rem;
+  margin-top:1rem;
+}
+.step{
+  display:flex;
+  flex-direction:column;
+  gap:0.4rem;
+  padding:1rem;
+  background:var(--smoke);
+  border:1px solid var(--gold-line);
+  border-top:2px solid var(--gold-dim);
+}
+.step-n{
+  font-family:'Space Mono',monospace;
+  font-size:0.55rem;
+  color:var(--gold-dim);
+  letter-spacing:0.2em;
+}
+.step-t{
+  font-family:'Space Mono',monospace;
+  font-size:0.62rem;
+  color:rgba(244,237,224,0.7);
+  letter-spacing:0.08em;
+}
+.step-d{
+  font-size:0.82rem;
+  line-height:1.7;
+  color:rgba(244,237,224,0.38);
+  font-weight:300;
+}
+
+/* ── BAZI HELP ── */
+.bazi-help{
+  margin-bottom:1.5rem;
+  border:1px solid var(--gold-line);
+  background:var(--ash);
+}
+.help-toggle{
+  width:100%;
+  background:none;
+  border:none;
+  color:rgba(244,237,224,0.4);
+  padding:0.8rem 1.2rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.2em;
+  text-align:left;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  transition:color 0.2s;
+}
+.help-toggle:hover{color:var(--gold-dim)}
+.help-toggle .arrow{transition:transform 0.25s;display:inline-block}
+.help-body{
+  display:none;
+  padding:0 1.2rem 1.2rem;
+}
+.help-body.open{display:block}
+.help-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0.6rem;
+  margin-bottom:0.8rem;
+}
+.help-item{
+  padding:0.7rem 0.9rem;
+  background:var(--smoke);
+  border-left:2px solid var(--gold-line);
+}
+.help-item-title{
+  font-family:'Noto Serif SC',serif;
+  font-size:1rem;
+  color:var(--gold);
+  margin-bottom:0.25rem;
+}
+.help-item-desc{
+  font-size:0.78rem;
+  color:rgba(244,237,224,0.4);
+  line-height:1.6;
+}
+.help-note{
+  font-family:'Space Mono',monospace;
+  font-size:0.58rem;
+  color:rgba(244,237,224,0.25);
+  letter-spacing:0.05em;
+  line-height:1.7;
+}
+
+/* ── CARD SUBTITLE ── */
+.card-subtitle{
+  font-size:0.78rem;
+  color:rgba(244,237,224,0.28);
+  line-height:1.6;
+  margin-bottom:0.8rem;
+  font-weight:300;
+  font-style:italic;
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:600px){
   .hero{grid-template-columns:1fr;gap:1rem}
@@ -612,6 +756,9 @@ footer p{
   .result-grid{grid-template-columns:1fr}
   .result-card.full{grid-column:1}
   .export-row{flex-wrap:wrap}
+  .about-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .help-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -633,6 +780,52 @@ footer p{
       <div class="hero-sigil">命</div>
     </div>
   </header>
+
+  <!-- ── ABOUT ── -->
+  <section class="about-section z1">
+    <div class="divider">WHAT IS ORACLE · 关于本系统</div>
+    <div class="about-grid">
+      <div class="about-block">
+        <div class="about-icon">命</div>
+        <div class="about-title">不是算命</div>
+        <div class="about-text">ORACLE 不预测你的未来，也不给你贴标签。它用八字作为入口，帮你看清自己天生的认知结构——你怎么处理信息、做决定、消耗能量。</div>
+      </div>
+      <div class="about-block">
+        <div class="about-icon">识</div>
+        <div class="about-title">认知操作系统</div>
+        <div class="about-text">每个人出生时自带一套认知操作系统。八字记录了这套系统的初始参数：优势模块、盲区、能量分配方式。ORACLE 把它翻译成现代语言。</div>
+      </div>
+      <div class="about-block">
+        <div class="about-icon">还</div>
+        <div class="about-title">还原，不改变</div>
+        <div class="about-text">你听过太多"你应该变成什么样"。ORACLE 只问一件事：你本来是什么样的？所有输出都指向还原，而不是改造。</div>
+      </div>
+    </div>
+
+    <div class="divider">HOW TO USE · 使用步骤</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">STEP 01</div>
+        <div class="step-t">配置 API Key</div>
+        <div class="step-d">填入 DeepSeek 或 OpenAI 的 API Key，保存到浏览器本地。Key 不经过任何服务器。</div>
+      </div>
+      <div class="step">
+        <div class="step-n">STEP 02</div>
+        <div class="step-t">输入四柱八字</div>
+        <div class="step-d">点击年月日时各柱的天干地支按钮，从弹出菜单中选字。不知道八字可在网上搜索"生辰八字查询"。</div>
+      </div>
+      <div class="step">
+        <div class="step-n">STEP 03</div>
+        <div class="step-t">填写基本信息</div>
+        <div class="step-d">填入姓名（可选）、性别、当前最关注的方向，让分析更有针对性。</div>
+      </div>
+      <div class="step">
+        <div class="step-n">STEP 04</div>
+        <div class="step-t">启动分析 & 追问</div>
+        <div class="step-d">点击"启动分析"，ORACLE 流式返回五维认知图谱。结果出来后可继续追问。</div>
+      </div>
+    </div>
+  </section>
 
   <!-- ── API SETUP ── -->
   <div class="api-strip z1">
@@ -672,6 +865,38 @@ footer p{
   <div class="bazi-section z1">
     <div class="divider">INPUT FOUR PILLARS · 输入四柱八字</div>
     <p class="section-label">点击天干地支选择字符 · Click to select characters</p>
+
+    <div class="bazi-help">
+      <button class="help-toggle" onclick="toggleHelp(this)">
+        <span>什么是八字四柱？· WHAT IS BAZI?</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="help-body">
+        <div class="help-grid">
+          <div class="help-item">
+            <div class="help-item-title">天干 · Heavenly Stems</div>
+            <div class="help-item-desc">甲乙丙丁戊己庚辛壬癸，共十个字，代表能量的性质与方向——木的生发、火的扩散、土的稳固、金的收敛、水的渗透。</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">地支 · Earthly Branches</div>
+            <div class="help-item-desc">子丑寅卯辰巳午未申酉戌亥，共十二个字，对应十二月令与时辰，记录能量落地的方式与节律。</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">四柱 · Four Pillars</div>
+            <div class="help-item-desc">年柱（出生年）、月柱（出生月）、日柱（出生日）、时柱（出生时辰）。每柱一天干一地支，合计八字。</div>
+          </div>
+          <div class="help-item">
+            <div class="help-item-title">日主 · Day Master</div>
+            <div class="help-item-desc">日柱天干是"日主"，代表你这个人的核心能量属性，是八字分析的锚点。ORACLE 以日主为中心展开认知解读。</div>
+          </div>
+        </div>
+        <div class="help-note">
+          不知道自己的八字？可在搜索引擎搜索「生辰八字在线排盘」，输入出生年月日时即可获得四柱。<br>
+          时辰说明：子时 23-1点 · 丑时 1-3点 · 寅时 3-5点 · 卯时 5-7点 · 辰时 7-9点 · 巳时 9-11点<br>
+          午时 11-13点 · 未时 13-15点 · 申时 15-17点 · 酉时 17-19点 · 戌时 19-21点 · 亥时 21-23点
+        </div>
+      </div>
+    </div>
 
     <div class="pillars">
       <div class="pillar-col">
@@ -770,26 +995,31 @@ footer p{
       <div class="result-card">
         <div class="card-num">01</div>
         <div class="card-title">INNATE STRENGTH · 天然优势</div>
+        <div class="card-subtitle">不需要培养就已拥有的能力——你天生擅长的思维方式与行动模式</div>
         <div class="card-body" id="c1"></div>
       </div>
       <div class="result-card">
         <div class="card-num">02</div>
         <div class="card-title">BLIND SPOTS · 决策盲区</div>
+        <div class="card-subtitle">你在哪些情境下容易失去判断力——不是弱点，是需要觉察的结构性偏差</div>
         <div class="card-body" id="c2"></div>
       </div>
       <div class="result-card">
         <div class="card-num">03</div>
         <div class="card-title">ENERGY DRAIN · 能量泄露</div>
+        <div class="card-subtitle">什么人、什么环境、什么行为在持续消耗你——识别后可以主动减少暴露</div>
         <div class="card-body" id="c3"></div>
       </div>
       <div class="result-card">
         <div class="card-num">04</div>
         <div class="card-title">OPTIMAL STATE · 最优形态</div>
+        <div class="card-subtitle">你在什么状态下产出最高、活得最像自己——这是你应该刻意保护的状态</div>
         <div class="card-body" id="c4"></div>
       </div>
       <div class="result-card full">
         <div class="card-num">05</div>
         <div class="card-title">PROHIBITIONS · 对自己的禁令</div>
+        <div class="card-subtitle">根据你的命盘结构，以下行为会持续损耗你的核心能量——不是建议，是禁令</div>
         <div class="card-body" id="c5"></div>
       </div>
     </div>
@@ -1173,6 +1403,14 @@ function showErr(msg){
 
 function escHtml(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function toggleHelp(btn){
+  const body=btn.nextElementSibling;
+  const arrow=btn.querySelector('.arrow');
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  arrow.style.transform=isOpen?'':'rotate(180deg)';
 }
 </script>
 </body>
