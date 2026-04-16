@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORACLE · 八字认知系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --ink:#08060a;
+  --gold:#c9a84c;
+  --gold-dim:#7a6430;
+  --gold-glow:rgba(201,168,76,0.12);
+  --gold-line:rgba(201,168,76,0.18);
+  --ash:#100e12;
+  --smoke:#18151c;
+  --mist:#2a2530;
+  --paper:#f4ede0;
+  --paper-dim:rgba(244,237,224,0.6);
+  --paper-faint:rgba(244,237,224,0.25);
+  --red-dim:#5a1515;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'Cormorant Garamond','Noto Serif SC',serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* Atmospheric background */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 10%, rgba(201,168,76,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 85% 90%, rgba(90,21,21,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(201,168,76,0.02) 0%, transparent 100%);
+  pointer-events:none;z-index:0;
+}
+
+/* Fine grid */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+  background-size:80px 80px;
+  pointer-events:none;z-index:0;
+}
+
+.z1{position:relative;z-index:1}
+
+/* ── LAYOUT ── */
+.page{max-width:860px;margin:0 auto;padding:0 2rem}
+
+/* ── HERO ── */
+.hero{
+  padding:4rem 0 3rem;
+  border-bottom:1px solid var(--gold-line);
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:end;
+  gap:2rem;
+}
+.hero-left{}
+.hero-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.4em;
+  color:var(--gold-dim);
+  margin-bottom:1rem;
+  animation:fadeUp 0.8s ease both;
+}
+.hero-title{
+  font-size:clamp(2.4rem,6vw,4rem);
+  font-weight:300;
+  line-height:1.1;
+  letter-spacing:-0.01em;
+  animation:fadeUp 0.8s 0.1s ease both;
+}
+.hero-title em{
+  font-style:italic;
+  color:var(--gold);
+  display:block;
+}
+.hero-sub{
+  margin-top:1.2rem;
+  font-size:1rem;
+  line-height:1.8;
+  color:var(--paper-dim);
+  font-weight:300;
+  max-width:440px;
+  animation:fadeUp 0.8s 0.2s ease both;
+}
+.hero-right{
+  animation:fadeUp 0.8s 0.3s ease both;
+}
+.hero-sigil{
+  font-family:'Noto Serif SC',serif;
+  font-size:3.5rem;
+  color:var(--gold);
+  opacity:0.3;
+  line-height:1;
+  letter-spacing:0.1em;
+  text-align:right;
+}
+
+/* ── API SETUP ── */
+.api-strip{
+  background:var(--ash);
+  border:1px solid var(--gold-line);
+  padding:1.5rem 2rem;
+  margin:2rem 0;
+  animation:fadeUp 0.8s 0.35s ease both;
+}
+.api-strip-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.2rem;
+}
+.api-strip-title{
+  font-family:'Space Mono',monospace;
+  font-size:0.65rem;
+  letter-spacing:0.25em;
+  color:var(--gold-dim);
+}
+.api-status{
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.1em;
+  padding:0.25rem 0.7rem;
+  border:1px solid;
+}
+.api-status.ok{color:#6dbf7a;border-color:rgba(109,191,122,0.4)}
+.api-status.none{color:var(--gold-dim);border-color:var(--gold-line)}
+
+.api-fields{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:0.75rem;
+  align-items:end;
+}
+.field-wrap label{
+  display:block;
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.15em;
+  color:rgba(244,237,224,0.35);
+  margin-bottom:0.4rem;
+}
+.field-wrap input,.field-wrap select{
+  background:var(--smoke);
+  border:1px solid var(--gold-line);
+  color:var(--paper);
+  padding:0.65rem 0.9rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.75rem;
+  outline:none;
+  transition:border-color 0.2s;
+  width:100%;
+}
+.field-wrap input:focus,.field-wrap select:focus{border-color:var(--gold)}
+.field-wrap select option{background:var(--ash)}
+.field-wrap.grow{flex:1}
+
+.btn-api{
+  background:var(--gold);
+  border:none;
+  color:var(--ink);
+  padding:0.65rem 1.4rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.65rem;
+  font-weight:700;
+  letter-spacing:0.15em;
+  cursor:pointer;
+  transition:opacity 0.2s;
+  white-space:nowrap;
+  height:fit-content;
+}
+.btn-api:hover{opacity:0.82}
+
+.api-hint{
+  margin-top:0.8rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.58rem;
+  color:rgba(244,237,224,0.25);
+  letter-spacing:0.05em;
+}
+.api-hint a{color:var(--gold-dim);text-decoration:none}
+.api-hint a:hover{color:var(--gold)}
+
+/* ── DIVIDER ── */
+.divider{
+  display:flex;align-items:center;gap:1.2rem;
+  margin:2rem 0 1.5rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.58rem;
+  letter-spacing:0.3em;
+  color:var(--gold-dim);
+}
+.divider::before,.divider::after{
+  content:'';flex:1;
+  height:1px;
+  background:var(--gold-line);
+}
+
+/* ── BAZI INPUT ── */
+.bazi-section{animation:fadeUp 0.8s 0.4s ease both}
+
+.section-label{
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.25em;
+  color:var(--gold-dim);
+  margin-bottom:1.5rem;
+}
+
+.pillars{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:0.75rem;
+  margin-bottom:1.5rem;
+}
+.pillar-col{}
+.pillar-name{
+  font-family:'Space Mono',monospace;
+  font-size:0.55rem;
+  letter-spacing:0.2em;
+  color:rgba(244,237,224,0.3);
+  text-align:center;
+  margin-bottom:0.5rem;
+}
+
+.char-btn{
+  width:100%;
+  background:var(--ash);
+  border:1px solid var(--gold-line);
+  color:var(--paper);
+  padding:1rem 0.5rem;
+  font-family:'Noto Serif SC',serif;
+  font-size:1.6rem;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color 0.15s,background 0.15s;
+  position:relative;
+  margin-bottom:0.5rem;
+  display:block;
+}
+.char-btn:hover{border-color:rgba(201,168,76,0.4);background:var(--smoke)}
+.char-btn.active{border-color:var(--gold);background:var(--smoke)}
+
+/* Dropdown */
+.char-picker{
+  position:absolute;top:100%;left:0;right:0;
+  background:var(--smoke);
+  border:1px solid rgba(201,168,76,0.35);
+  border-top:none;
+  z-index:200;
+  display:none;
+  flex-wrap:wrap;
+  padding:0.4rem;
+  gap:0.2rem;
+}
+.char-picker.open{display:flex}
+.pick-item{
+  width:calc(25% - 0.2rem);
+  padding:0.45rem 0;
+  text-align:center;
+  font-family:'Noto Serif SC',serif;
+  font-size:1.1rem;
+  color:var(--paper-dim);
+  cursor:pointer;
+  transition:color 0.1s;
+  border:1px solid transparent;
+}
+.pick-item:hover{color:var(--gold);border-color:var(--gold-line)}
+.pick-item.sel{color:var(--gold);background:var(--gold-glow)}
+
+/* ── USER INFO ── */
+.info-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:0.75rem;
+  margin-bottom:1.5rem;
+}
+.info-field label{
+  display:block;
+  font-family:'Space Mono',monospace;
+  font-size:0.58rem;
+  letter-spacing:0.15em;
+  color:rgba(244,237,224,0.3);
+  margin-bottom:0.4rem;
+}
+.info-field input,.info-field select{
+  width:100%;
+  background:var(--ash);
+  border:1px solid var(--gold-line);
+  color:var(--paper);
+  padding:0.65rem 0.8rem;
+  font-family:'Noto Serif SC',serif;
+  font-size:0.95rem;
+  outline:none;
+  transition:border-color 0.2s;
+}
+.info-field input:focus,.info-field select:focus{border-color:var(--gold)}
+.info-field select option{background:var(--ash)}
+
+/* ── CTA ── */
+.cta-wrap{margin-top:0.5rem}
+.btn-run{
+  width:100%;
+  background:transparent;
+  border:1px solid var(--gold);
+  color:var(--gold);
+  padding:1.2rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.75rem;
+  font-weight:700;
+  letter-spacing:0.35em;
+  cursor:pointer;
+  transition:all 0.3s;
+  position:relative;overflow:hidden;
+}
+.btn-run::before{
+  content:'';position:absolute;inset:0;
+  background:var(--gold);
+  transform:translateX(-101%);
+  transition:transform 0.35s ease;
+  z-index:0;
+}
+.btn-run:hover::before{transform:translateX(0)}
+.btn-run:hover{color:var(--ink)}
+.btn-run span{position:relative;z-index:1}
+.btn-run:disabled{opacity:0.35;cursor:not-allowed}
+.btn-run:disabled::before{display:none}
+.btn-run:disabled:hover{color:var(--gold)}
+
+.err{
+  display:none;
+  margin-top:0.75rem;
+  background:rgba(90,21,21,0.2);
+  border:1px solid rgba(90,21,21,0.5);
+  padding:0.8rem 1.2rem;
+  color:#d08080;
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;
+  letter-spacing:0.05em;
+  line-height:1.6;
+}
+.err.show{display:block}
+
+/* ── LOADING ── */
+.loading{
+  display:none;
+  padding:4rem 0;
+  text-align:center;
+}
+.loading.show{display:block}
+.load-chars{
+  font-family:'Noto Serif SC',serif;
+  font-size:2.5rem;
+  color:var(--gold);
+  letter-spacing:0.6em;
+  animation:shimmer 2.5s ease-in-out infinite;
+}
+.load-line{
+  margin-top:1.5rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.3em;
+  color:rgba(244,237,224,0.2);
+}
+.load-dots::after{
+  content:'';
+  animation:dots 1.5s steps(4,end) infinite;
+}
+@keyframes dots{
+  0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}
+}
+@keyframes shimmer{
+  0%,100%{opacity:0.3;letter-spacing:0.6em}
+  50%{opacity:1;letter-spacing:0.8em}
+}
+
+/* ── RESULT ── */
+.result{
+  display:none;
+  animation:fadeUp 0.5s ease both;
+}
+.result.show{display:block}
+
+.result-masthead{
+  padding:2rem 0 1.5rem;
+  border-bottom:1px solid var(--gold-line);
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+.result-bazi-display{
+  font-family:'Noto Serif SC',serif;
+  font-size:2rem;
+  color:var(--gold);
+  letter-spacing:0.4em;
+  line-height:1;
+}
+.result-meta{
+  font-family:'Space Mono',monospace;
+  font-size:0.58rem;
+  color:var(--gold-dim);
+  letter-spacing:0.15em;
+  text-align:right;
+  line-height:1.8;
+}
+
+.result-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0.75rem;
+  margin:1.5rem 0;
+}
+.result-card{
+  background:var(--ash);
+  border:1px solid var(--gold-line);
+  padding:1.5rem;
+  position:relative;
+  transition:border-color 0.2s;
+}
+.result-card::after{
+  content:'';
+  position:absolute;
+  left:0;top:20%;bottom:20%;
+  width:1px;
+  background:linear-gradient(to bottom,transparent,var(--gold),transparent);
+  opacity:0.4;
+}
+.result-card:hover{border-color:rgba(201,168,76,0.35)}
+.result-card.full{grid-column:1/-1}
+
+.card-num{
+  font-family:'Space Mono',monospace;
+  font-size:0.55rem;
+  color:var(--gold-dim);
+  letter-spacing:0.2em;
+  margin-bottom:0.4rem;
+}
+.card-title{
+  font-family:'Space Mono',monospace;
+  font-size:0.62rem;
+  letter-spacing:0.2em;
+  color:rgba(244,237,224,0.5);
+  margin-bottom:1rem;
+}
+.card-body{
+  font-size:0.95rem;
+  line-height:1.9;
+  color:rgba(244,237,224,0.82);
+  font-weight:300;
+  white-space:pre-wrap;
+  min-height:2rem;
+}
+
+/* ── EXPORT ── */
+.export-row{
+  display:flex;gap:0.75rem;
+  margin:1.5rem 0;
+}
+.btn-export{
+  background:transparent;
+  border:1px solid var(--gold-line);
+  color:var(--gold-dim);
+  padding:0.6rem 1.2rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.15em;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-export:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── CHAT ── */
+.chat-wrap{
+  margin-top:2rem;
+  border-top:1px solid var(--gold-line);
+  padding-top:2rem;
+}
+.chat-log{
+  min-height:80px;
+  max-height:420px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:0.75rem;
+  margin-bottom:1rem;
+  padding-right:0.5rem;
+}
+.chat-log::-webkit-scrollbar{width:2px}
+.chat-log::-webkit-scrollbar-track{background:transparent}
+.chat-log::-webkit-scrollbar-thumb{background:var(--gold-line)}
+
+.msg{
+  padding:1rem 1.4rem;
+  animation:fadeUp 0.25s ease both;
+  max-width:88%;
+}
+.msg.user{
+  background:var(--smoke);
+  border-left:2px solid rgba(201,168,76,0.5);
+  align-self:flex-end;
+}
+.msg.bot{
+  background:var(--ash);
+  border-left:2px solid var(--gold-line);
+}
+.msg-who{
+  font-family:'Space Mono',monospace;
+  font-size:0.55rem;
+  letter-spacing:0.2em;
+  color:var(--gold-dim);
+  margin-bottom:0.4rem;
+}
+.msg-text{
+  font-size:0.95rem;
+  line-height:1.85;
+  color:rgba(244,237,224,0.85);
+  white-space:pre-wrap;
+}
+
+.chat-bar{
+  display:flex;
+  gap:0.75rem;
+}
+.chat-in{
+  flex:1;
+  background:var(--ash);
+  border:1px solid var(--gold-line);
+  color:var(--paper);
+  padding:0.8rem 1rem;
+  font-family:'Noto Serif SC',serif;
+  font-size:0.95rem;
+  outline:none;
+  resize:none;
+  height:44px;
+  transition:border-color 0.2s;
+}
+.chat-in:focus{border-color:var(--gold)}
+.btn-send{
+  background:var(--gold);
+  border:none;
+  color:var(--ink);
+  padding:0 1.4rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.65rem;
+  font-weight:700;
+  letter-spacing:0.1em;
+  cursor:pointer;
+  transition:opacity 0.2s;
+  white-space:nowrap;
+}
+.btn-send:hover{opacity:0.82}
+.btn-send:disabled{opacity:0.3;cursor:not-allowed}
+
+/* Streaming cursor */
+.cur{
+  display:inline-block;width:1.5px;height:0.9em;
+  background:var(--gold);
+  animation:blink 0.9s step-end infinite;
+  vertical-align:text-bottom;margin-left:1px;
+}
+@keyframes blink{50%{opacity:0}}
+
+/* ── FOOTER ── */
+footer{
+  padding:2.5rem 0;
+  margin-top:4rem;
+  border-top:1px solid var(--gold-line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+footer p{
+  font-family:'Space Mono',monospace;
+  font-size:0.55rem;
+  color:rgba(244,237,224,0.2);
+  letter-spacing:0.15em;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .hero{grid-template-columns:1fr;gap:1rem}
+  .hero-sigil{display:none}
+  .api-fields{grid-template-columns:1fr;gap:0.6rem}
+  .pillars{gap:0.5rem}
+  .info-row{grid-template-columns:1fr 1fr}
+  .result-grid{grid-template-columns:1fr}
+  .result-card.full{grid-column:1}
+  .export-row{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<div class="page z1">
+
+  <!-- ── HERO ── -->
+  <header class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">ORACLE · 命理认知系统 · BAZI INTELLIGENCE</div>
+      <h1 class="hero-title">
+        不是改变你<br>
+        <em>是还原你</em>
+      </h1>
+      <p class="hero-sub">八字是你认知操作系统的源码。输入四柱，ORACLE 为你生成专属的认知图谱——天然优势、决策盲区、能量模式。</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-sigil">命</div>
+    </div>
+  </header>
+
+  <!-- ── API SETUP ── -->
+  <div class="api-strip z1">
+    <div class="api-strip-head">
+      <div class="api-strip-title">MODEL CONFIGURATION · 模型配置</div>
+      <div class="api-status none" id="apiStatus">NO KEY · 未配置</div>
+    </div>
+    <div class="api-fields">
+      <div class="field-wrap">
+        <label>PROVIDER</label>
+        <select id="provider" onchange="onProviderChange()" style="width:130px">
+          <option value="deepseek">DeepSeek</option>
+          <option value="openai">OpenAI</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div class="field-wrap grow">
+        <label>API KEY</label>
+        <input type="password" id="apiKey" placeholder="sk-..." oninput="checkKey()" />
+      </div>
+      <button class="btn-api" onclick="saveKey()">保存 SAVE</button>
+    </div>
+    <div class="field-wrap" style="margin-top:0.6rem" id="modelRow">
+      <label>MODEL</label>
+      <select id="modelSel" style="width:220px">
+        <option value="deepseek-chat">deepseek-chat</option>
+        <option value="deepseek-reasoner">deepseek-reasoner</option>
+      </select>
+    </div>
+    <div class="api-hint">
+      DeepSeek API Key 获取：<a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>
+      · Key 仅保存在你的浏览器本地，不上传任何服务器
+    </div>
+  </div>
+
+  <!-- ── BAZI INPUT ── -->
+  <div class="bazi-section z1">
+    <div class="divider">INPUT FOUR PILLARS · 输入四柱八字</div>
+    <p class="section-label">点击天干地支选择字符 · Click to select characters</p>
+
+    <div class="pillars">
+      <div class="pillar-col">
+        <div class="pillar-name">年柱 YEAR</div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-ytg" onclick="togglePicker('ytg','tg')">甲</button>
+          <div class="char-picker" id="pick-ytg"></div>
+        </div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-ydz" onclick="togglePicker('ydz','dz')">子</button>
+          <div class="char-picker" id="pick-ydz"></div>
+        </div>
+      </div>
+      <div class="pillar-col">
+        <div class="pillar-name">月柱 MONTH</div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-mtg" onclick="togglePicker('mtg','tg')">甲</button>
+          <div class="char-picker" id="pick-mtg"></div>
+        </div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-mdz" onclick="togglePicker('mdz','dz')">子</button>
+          <div class="char-picker" id="pick-mdz"></div>
+        </div>
+      </div>
+      <div class="pillar-col">
+        <div class="pillar-name">日柱 DAY</div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-dtg" onclick="togglePicker('dtg','tg')">甲</button>
+          <div class="char-picker" id="pick-dtg"></div>
+        </div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-ddz" onclick="togglePicker('ddz','dz')">子</button>
+          <div class="char-picker" id="pick-ddz"></div>
+        </div>
+      </div>
+      <div class="pillar-col">
+        <div class="pillar-name">时柱 HOUR</div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-htg" onclick="togglePicker('htg','tg')">甲</button>
+          <div class="char-picker" id="pick-htg"></div>
+        </div>
+        <div style="position:relative">
+          <button class="char-btn" id="btn-hdz" onclick="togglePicker('hdz','dz')">子</button>
+          <div class="char-picker" id="pick-hdz"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-field">
+        <label>NAME · 姓名（可选）</label>
+        <input type="text" id="uname" placeholder="称呼" />
+      </div>
+      <div class="info-field">
+        <label>GENDER · 性别</label>
+        <select id="ugender">
+          <option value="女">女</option>
+          <option value="男">男</option>
+          <option value="不限">不限</option>
+        </select>
+      </div>
+      <div class="info-field">
+        <label>FOCUS · 当前关注</label>
+        <select id="ufocus">
+          <option value="职业发展">职业发展</option>
+          <option value="自我认知">自我认知</option>
+          <option value="人际关系">人际关系</option>
+          <option value="决策困境">决策困境</option>
+          <option value="整体分析">整体分析</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="cta-wrap">
+      <button class="btn-run" id="runBtn" onclick="runOracle()">
+        <span>启动分析 · INITIATE ORACLE</span>
+      </button>
+      <div class="err" id="errBox"></div>
+    </div>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div class="loading z1" id="loading">
+    <div class="load-chars" id="loadChars">命</div>
+    <div class="load-line">ORACLE IS READING YOUR STRUCTURE<span class="load-dots"></span></div>
+  </div>
+
+  <!-- ── RESULT ── -->
+  <div class="result z1" id="result">
+    <div class="result-masthead">
+      <div class="result-bazi-display" id="rBazi"></div>
+      <div class="result-meta" id="rMeta"></div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="card-num">01</div>
+        <div class="card-title">INNATE STRENGTH · 天然优势</div>
+        <div class="card-body" id="c1"></div>
+      </div>
+      <div class="result-card">
+        <div class="card-num">02</div>
+        <div class="card-title">BLIND SPOTS · 决策盲区</div>
+        <div class="card-body" id="c2"></div>
+      </div>
+      <div class="result-card">
+        <div class="card-num">03</div>
+        <div class="card-title">ENERGY DRAIN · 能量泄露</div>
+        <div class="card-body" id="c3"></div>
+      </div>
+      <div class="result-card">
+        <div class="card-num">04</div>
+        <div class="card-title">OPTIMAL STATE · 最优形态</div>
+        <div class="card-body" id="c4"></div>
+      </div>
+      <div class="result-card full">
+        <div class="card-num">05</div>
+        <div class="card-title">PROHIBITIONS · 对自己的禁令</div>
+        <div class="card-body" id="c5"></div>
+      </div>
+    </div>
+
+    <div class="export-row">
+      <button class="btn-export" onclick="exportMD()">↓ 导出 AGENT 调优文件 .md</button>
+      <button class="btn-export" onclick="copyText()">⊕ 复制全文</button>
+      <button class="btn-export" onclick="resetAll()">↺ 重新分析</button>
+    </div>
+
+    <div class="chat-wrap">
+      <div class="divider">CONTINUE THE DIALOGUE · 继续对话</div>
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-bar">
+        <textarea class="chat-in" id="chatIn" placeholder="继续追问 ORACLE..." onkeydown="onKey(event)"></textarea>
+        <button class="btn-send" id="sendBtn" onclick="sendMsg()">发送 ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>ORACLE · 八字认知系统 · 2026</p>
+    <p>KEY STORED LOCALLY · API CALLS GO DIRECTLY TO PROVIDER · NO DATA COLLECTED</p>
+  </footer>
+
+</div>
+
+<script>
+const TG=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const DZ=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+
+const PILLARS={
+  ytg:{type:'tg',label:'年天干'},ydz:{type:'dz',label:'年地支'},
+  mtg:{type:'tg',label:'月天干'},mdz:{type:'dz',label:'月地支'},
+  dtg:{type:'tg',label:'日天干'},ddz:{type:'dz',label:'日地支'},
+  htg:{type:'tg',label:'时天干'},hdz:{type:'dz',label:'时地支'},
+};
+
+// State
+let cfg={provider:'deepseek',key:'',model:'deepseek-chat'};
+let history=[];
+let baziStr='';
+
+// ── INIT ──
+(function init(){
+  const saved=localStorage.getItem('oracle_cfg');
+  if(saved){try{cfg={...cfg,...JSON.parse(saved)};}catch(e){}}
+  document.getElementById('provider').value=cfg.provider||'deepseek';
+  document.getElementById('apiKey').value=cfg.key||'';
+  document.getElementById('modelSel').value=cfg.model||'deepseek-chat';
+  updateStatus();
+  initPickers();
+})();
+
+function initPickers(){
+  Object.entries(PILLARS).forEach(([id,{type}])=>{
+    const chars=type==='tg'?TG:DZ;
+    const btn=document.getElementById('btn-'+id);
+    btn.textContent=chars[0];
+    const pick=document.getElementById('pick-'+id);
+    pick.innerHTML=chars.map(c=>`<div class="pick-item" data-c="${c}" onclick="selectChar('${id}','${c}')">${c}</div>`).join('');
+  });
+}
+
+function togglePicker(id,type){
+  const pick=document.getElementById('pick-'+id);
+  const isOpen=pick.classList.contains('open');
+  closeAllPickers();
+  if(!isOpen){
+    pick.classList.add('open');
+    document.getElementById('btn-'+id).classList.add('active');
+  }
+}
+
+function closeAllPickers(){
+  document.querySelectorAll('.char-picker.open').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.char-btn.active').forEach(b=>b.classList.remove('active'));
+}
+
+function selectChar(id,c){
+  document.getElementById('btn-'+id).textContent=c;
+  document.querySelectorAll(`#pick-${id} .pick-item`).forEach(el=>{
+    el.classList.toggle('sel',el.dataset.c===c);
+  });
+  closeAllPickers();
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.pillar-col'))closeAllPickers();
+});
+
+function getVal(id){return document.getElementById('btn-'+id).textContent}
+
+function getBazi(){
+  return{
+    year:getVal('ytg')+getVal('ydz'),
+    month:getVal('mtg')+getVal('mdz'),
+    day:getVal('dtg')+getVal('ddz'),
+    hour:getVal('htg')+getVal('hdz'),
+  };
+}
+
+// ── API CONFIG ──
+function onProviderChange(){
+  const p=document.getElementById('provider').value;
+  const ms=document.getElementById('modelSel');
+  if(p==='deepseek'){
+    ms.innerHTML=`<option value="deepseek-chat">deepseek-chat</option><option value="deepseek-reasoner">deepseek-reasoner</option>`;
+  }else if(p==='openai'){
+    ms.innerHTML=`<option value="gpt-4o">gpt-4o</option><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4-turbo">gpt-4-turbo</option>`;
+  }else{
+    ms.innerHTML=`<option value="custom">custom-model</option>`;
+  }
+}
+
+function getEndpoint(){
+  const p=document.getElementById('provider').value;
+  if(p==='deepseek')return'https://api.deepseek.com/v1/chat/completions';
+  if(p==='openai')return'https://api.openai.com/v1/chat/completions';
+  return prompt('请输入 API Endpoint:','https://') || '';
+}
+
+function checkKey(){updateStatus()}
+function updateStatus(){
+  const k=document.getElementById('apiKey').value.trim();
+  const el=document.getElementById('apiStatus');
+  if(k){el.textContent='KEY SET · 已配置';el.className='api-status ok';}
+  else{el.textContent='NO KEY · 未配置';el.className='api-status none';}
+}
+function saveKey(){
+  cfg.provider=document.getElementById('provider').value;
+  cfg.key=document.getElementById('apiKey').value.trim();
+  cfg.model=document.getElementById('modelSel').value;
+  localStorage.setItem('oracle_cfg',JSON.stringify(cfg));
+  updateStatus();
+}
+
+// ── SYSTEM PROMPT ──
+function buildSystem(bazi,name,gender,focus){
+  const dayMaster=bazi.day[0];
+  return `你是 ORACLE，一个基于八字命理的认知系统分析师。你不预测命运，你解读认知操作系统。
+
+用户命盘：${bazi.year} ${bazi.month} ${bazi.day} ${bazi.hour}
+日主：${dayMaster}
+称呼：${name||'用户'} · 性别：${gender} · 当前关注：${focus}
+
+分析原则：
+· 不改变用户，帮助用户还原自己本来的样子
+· 用现代认知科学语言翻译命理洞见
+· 语言直接有力，不废话，不说"命中注定"
+· 禁止说"你需要改变"，只说"你本来是什么样的"
+
+输出格式（严格按此结构，每段150-250字）：
+
+【天然优势】
+（不需要培养就拥有的能力，天生的认知优势）
+
+【决策盲区】
+（容易在哪里误判，哪些情境会让你失去判断力）
+
+【能量泄露点】
+（什么行为、什么人、什么环境在持续消耗你）
+
+【最优形态】
+（你在什么状态下产出最高、活得最像自己）
+
+【对自己的禁令】
+（绝对不要对自己做的五件事，用"禁止"开头，一条一行）`;
+}
+
+// ── LLM CALL ──
+async function callLLM(msgs,onChunk){
+  const key=cfg.key||document.getElementById('apiKey').value.trim();
+  if(!key)throw new Error('请先填写并保存 API Key');
+  const endpoint=getEndpoint();
+  const model=cfg.model||document.getElementById('modelSel').value;
+
+  const res=await fetch(endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model,messages:msgs,stream:true,temperature:0.85,max_tokens:2500})
+  });
+  if(!res.ok){
+    const t=await res.text();
+    let msg=`API Error ${res.status}`;
+    try{const j=JSON.parse(t);msg+=': '+(j.error?.message||t);}catch(e){msg+=': '+t.slice(0,200);}
+    throw new Error(msg);
+  }
+
+  const reader=res.body.getReader();
+  const dec=new TextDecoder();
+  let full='';
+  while(true){
+    const{done,value}=await reader.read();
+    if(done)break;
+    const chunk=dec.decode(value);
+    for(const line of chunk.split('\n')){
+      if(!line.startsWith('data: '))continue;
+      const d=line.slice(6).trim();
+      if(d==='[DONE]')continue;
+      try{
+        const delta=JSON.parse(d).choices?.[0]?.delta?.content||'';
+        if(delta){full+=delta;onChunk(full);}
+      }catch(e){}
+    }
+  }
+  return full;
+}
+
+// ── PARSE ──
+function parse(text){
+  const keys={
+    '天然优势':'c1','决策盲区':'c2','能量泄露点':'c3','最优形态':'c4','对自己的禁令':'c5'
+  };
+  const out={c1:'',c2:'',c3:'',c4:'',c5:''};
+  let cur=null;
+  for(const line of text.split('\n')){
+    let matched=false;
+    for(const[k,id]of Object.entries(keys)){
+      if(line.includes(`【${k}】`)){cur=id;matched=true;break;}
+    }
+    if(!matched&&cur)out[cur]+=(out[cur]?'\n':'')+line;
+  }
+  return out;
+}
+
+function renderParsed(text){
+  const p=parse(text);
+  ['c1','c2','c3','c4','c5'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(p[id])el.textContent=p[id].trim();
+  });
+}
+
+// ── RUN ──
+async function runOracle(){
+  const bazi=getBazi();
+  const name=document.getElementById('uname').value.trim();
+  const gender=document.getElementById('ugender').value;
+  const focus=document.getElementById('ufocus').value;
+
+  showErr('');
+
+  // Animate loading chars
+  baziStr=[bazi.year,bazi.month,bazi.day,bazi.hour].join(' ');
+  document.getElementById('loadChars').textContent=bazi.day[0];
+
+  document.getElementById('result').className='result';
+  document.getElementById('loading').className='loading show';
+  document.getElementById('runBtn').disabled=true;
+
+  ['c1','c2','c3','c4','c5'].forEach(id=>{document.getElementById(id).textContent='';});
+  history=[];
+
+  const sys=buildSystem(bazi,name,gender,focus);
+  const msgs=[
+    {role:'system',content:sys},
+    {role:'user',content:`请分析命盘：${baziStr}，关注方向：${focus}`}
+  ];
+
+  try{
+    let full='';
+    await callLLM(msgs,(text)=>{
+      full=text;
+      document.getElementById('loading').className='loading';
+      document.getElementById('result').className='result show';
+      renderParsed(text);
+    });
+
+    // Set masthead
+    document.getElementById('rBazi').textContent=
+      bazi.year+'  '+bazi.month+'  '+bazi.day+'  '+bazi.hour;
+    document.getElementById('rMeta').innerHTML=
+      `日主 ${bazi.day[0]} · ${name||''}${name?' · ':''}${gender}<br>${focus} · ORACLE 2026`;
+
+    history=[
+      {role:'system',content:sys},
+      {role:'user',content:`分析命盘：${baziStr}`},
+      {role:'assistant',content:full}
+    ];
+
+  }catch(e){
+    showErr(e.message);
+    document.getElementById('loading').className='loading';
+    document.getElementById('result').className='result';
+  }
+
+  document.getElementById('runBtn').disabled=false;
+}
+
+// ── CHAT ──
+function onKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}
+}
+
+async function sendMsg(){
+  const input=document.getElementById('chatIn');
+  const text=input.value.trim();
+  if(!text||!history.length)return;
+  input.value='';
+
+  const log=document.getElementById('chatLog');
+  document.getElementById('sendBtn').disabled=true;
+
+  // User bubble
+  const uDiv=document.createElement('div');
+  uDiv.className='msg user';
+  uDiv.innerHTML=`<div class="msg-who">YOU</div><div class="msg-text">${escHtml(text)}</div>`;
+  log.appendChild(uDiv);
+
+  // Bot bubble
+  const bDiv=document.createElement('div');
+  bDiv.className='msg bot';
+  bDiv.innerHTML=`<div class="msg-who">ORACLE</div><div class="msg-text" id="streaming"><span class="cur"></span></div>`;
+  log.appendChild(bDiv);
+  log.scrollTop=log.scrollHeight;
+
+  history.push({role:'user',content:text});
+
+  try{
+    let reply='';
+    await callLLM(history,(t)=>{
+      reply=t;
+      document.getElementById('streaming').innerHTML=escHtml(t)+'<span class="cur"></span>';
+      log.scrollTop=log.scrollHeight;
+    });
+    document.getElementById('streaming').innerHTML=escHtml(reply);
+    document.getElementById('streaming').id='';
+    history.push({role:'assistant',content:reply});
+  }catch(e){
+    document.getElementById('streaming').innerHTML=`<span style="color:#d08080">${escHtml(e.message)}</span>`;
+    showErr(e.message);
+  }
+
+  document.getElementById('sendBtn').disabled=false;
+  input.focus();
+}
+
+// ── EXPORT ──
+function getFullText(){
+  const sections=[
+    ['天然优势',document.getElementById('c1').textContent],
+    ['决策盲区',document.getElementById('c2').textContent],
+    ['能量泄露点',document.getElementById('c3').textContent],
+    ['最优形态',document.getElementById('c4').textContent],
+    ['对自己的禁令',document.getElementById('c5').textContent],
+  ];
+  return`# ORACLE · 认知操作系统\n# 八字：${baziStr}\n\n`+
+    sections.map(([k,v])=>`## ${k}\n\n${v}`).join('\n\n---\n\n');
+}
+
+function exportMD(){
+  const blob=new Blob([getFullText()],{type:'text/markdown;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`ORACLE_${baziStr.replace(/\s/g,'_')}.md`;
+  a.click();
+}
+
+function copyText(){
+  navigator.clipboard.writeText(getFullText()).then(()=>{
+    const btn=event.target;
+    const orig=btn.textContent;
+    btn.textContent='✓ 已复制';
+    setTimeout(()=>btn.textContent=orig,2000);
+  });
+}
+
+function resetAll(){
+  document.getElementById('result').className='result';
+  document.getElementById('chatLog').innerHTML='';
+  history=[];
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showErr(msg){
+  const el=document.getElementById('errBox');
+  el.textContent=msg;
+  el.className='err'+(msg?' show':'');
+}
+
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
